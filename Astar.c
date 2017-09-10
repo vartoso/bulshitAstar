@@ -176,11 +176,13 @@ struct cord *aStar(struct cord start,struct cord end, struct cord nodes[100]){
     closedSet[0].y = end.y;
     struct cord current[10][10];
     //initialize values
-    initit(nodes, end, &current[0]);
+    initit(nodes, start, &current[0]);
     /* takes an end point on the map (a pointer to a 2D array) and a current location
      finds the best route, then returns a pointer to the struct of best route */
+    co++;
     struct node *best = findf(end.x,end.y,&current[0]);
-
+    closedSet[co].x = best->x;
+    closedSet[co].y = best->y;
     while ( (co >= 0) & (co<100) ){
             if ((best->x != start.x) & (best->y != start.y)){
             best = findf(best->x,best->y,&current[0]);
@@ -206,8 +208,8 @@ int main()
     
     
     //this is static now but suppose to be dynamic
-    start.x=70;
-    start.y=80;
+    start.x=7;
+    start.y=8;
     end.x=0;
     end.y=0;
     
@@ -217,3 +219,4 @@ int main()
     printf("%d\n", ret[3].x);
     printf("%d\n", ret[3].y);
 }
+
