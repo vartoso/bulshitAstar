@@ -53,7 +53,7 @@ void input(struct cord * map,char *inputFile){
 
 
 //threw the init to another function just for the order of things
-void initit(struct cord * nodes, struct cord end, struct cord **current)
+void initit(struct cord * nodes, struct cord end, struct cord (* current)[10])
 {
     int minForce = 1000; //start with the lowest being the highest value
     //struct cord current[10][10];
@@ -70,121 +70,131 @@ void initit(struct cord * nodes, struct cord end, struct cord **current)
         
         //map the xy
         if (!((nodes[x].x > 10) | (nodes[x].y>10))){
-            current[nodes[x].x][nodes[x].y]=nodes[x];
+            current[nodes[x].x][nodes[x].y] = nodes[x];
         }
         //fix not given force
-        if ( nodes[x].force >1000 | nodes[x].force<0 ) nodes[x].force =  minForce;
+        if ( nodes[x].force > 1000 | nodes[x].force<0 ) nodes[x].force =  minForce;
+        //initiate parrent value
+        
         
     }
 
 }
 
+struct node *findf(int X,int  Y,struct cord (*current)[10]){
+
+    struct node list[100];
+    int co=0;
+    struct node *temp;
+    temp = malloc(sizeof( struct node));
+    
+    if (X<9){
+        co++;
+        list[co].x = current[X][Y].x+1;
+        list[co].y = current[X][Y].y;
+        list[co].force = current[X][Y].force*1.4;
+        list[co].closedSet = false;
+    }
+    //cross
+    if(X>0){
+        co++;
+        list[co].x = current[X][Y].x-1;
+        list[co].y = current[X][Y].y;
+        list[co].force = current[X][Y].force*1.4;
+        list[co].closedSet = false;
+    }
+    //cros
+    if((X<9)&(Y<9)){
+        co++;
+        list[co].closedSet = false;
+        list[co].x = current[X][Y].x+1;
+        list[co].y = current[X][Y].y+1;
+    }
+    if((X>0) & (Y>0)){
+        co++;
+        list[co].closedSet = false;
+        list[co].x = current[X][Y].x-1;
+        list[co].y = current[X][Y].y-1;
+    }
+    //cros
+    if(X<9){
+        co++;
+        list[co].closedSet = false;
+        list[co].x = current[X][Y].x;
+        list[co].y = current[X][Y].y+1;
+        list[co].force = current[X][Y].force*1.4;
+    }
+    if((Y>0)&(X<9)){
+        co++;
+        list[co].closedSet = false;
+        list[co].x = current[X][Y].x+1;
+        list[co].y = current[X][Y].y-1;
+    }
+    if((X>0)&(Y<9)){
+        co++;
+        list[co].closedSet = false;
+        list[co].x = current[X][Y].x-1;
+        list[co].y = current[X][Y].y+1;
+        //cross
+    }
+    if(Y>0){
+        co++;
+        list[co].closedSet = false;
+        list[co].x = current[X][Y].x;
+        list[co].y = current[X][Y].y-1;
+        list[co].force = current[X][Y].force*1.4;
+    }
+    //run overthem find the smalest F
+    for (int i = co; i>0 ; i--){
+        if (temp->force>list[i].force){
+            *temp =list[i];
+            temp->parentx = list[i].x;
+            temp->parenty = list[i].y;
+            temp->closedSet = true;
+        }
+        if ( list[i].force > list[i+1].force ){
+            *temp  = list[i+1];
+            temp->parentx = list[i+1].x;
+            temp->parenty = list[i+1].y;
+            temp->closedSet = true;
+        }
+    }
+    
+    return temp;
+    
+
+}
+
+
+
 
 struct cord *aStar(struct cord start,struct cord end, struct cord nodes[100]){
-//    int minForce = 1000; //start with the lowest being the highest value
-    struct cord openSet[xy];
     struct cord * closedSet = malloc(sizeof(struct cord)*100);
-    int co,cc ;
+    int co;
     co = 0;
-    openSet[0].x = end.x;
-    openSet[0].y = end.y;
+    closedSet[0].x = end.x;
+    closedSet[0].y = end.y;
     struct cord current[10][10];
-    struct cord * cur;
-    cur = current[0];
-    
     //initialize values
-    initit(nodes, end, &cur);
-    
-    
-    cc=0;
-    //lets run over each node:
-    //while there is something in the open list
-    while ( co >= 0 ){
-        struct node list[100];
-        //need to make current equal to end atleast for the first time
-        struct node temp;
-        int X,Y;
-        X=end.x;
-        Y=end.y;
-        //first run the target is end
-        temp.x = end.x;
-        temp.y = end.y;
-        temp.force = end.force;
-        
-    AGAIN:
-        current[X][Y].x = temp.x;
-        current[X][Y].y = temp.y;
-        current[X][Y].force = temp.force;
-        
-        //if we made it to the start node then stop,we're done...
-        if ((start.x == current[X][Y].x ) & (start.y == current[X][Y].y )) break;
-        if(current[X][Y].closedSet != true){
-            //generate 8 direction options
-            co++;
-            list[co].x = current[X][Y].x+1;
-            list[co].y = current[X][Y].y;
-            list[co].force = current[X][Y].force*1.4;
-            list[co].closedSet = false;
-            //cross
-            co++;
-            list[co].x = current[X][Y].x-1;
-            list[co].y = current[X][Y].y;
-            list[co].force = current[X][Y].force*1.4;
-            list[co].closedSet = false;
-            //cros
-            co++;
-            list[co].closedSet = false;
-            list[co].x = current[X][Y].x+1;
-            list[co].y = current[X][Y].y+1;
-            co++;
-            list[co].closedSet = false;
-            list[co].x = current[X][Y].x-1;
-            list[co].y = current[X][Y].y-1;
-            //cros
-            co++;
-            list[co].closedSet = false;
-            list[co].x = current[X][Y].x;
-            list[co].y = current[X][Y].y+1;
-            list[co].force = current[X][Y].force*1.4;
-            co++;
-            list[co].closedSet = false;
-            list[co].x = current[X][Y].x+1;
-            list[co].y = current[X][Y].y-1;
-            co++;
-            list[co].closedSet = false;
-            list[co].x = current[X][Y].x-1;
-            list[co].y = current[X][Y].y+1;
-            //cross
-            co++;
-            list[co].closedSet = false;
-            list[co].x = current[X][Y].x;
-            list[co].y = current[X][Y].y-1;
-            list[co].force = current[X][Y].force*1.4;
-            //run over the list and find the smallert F.
-            for (int i = co; i>0 ; i--){
-                if (temp.force>list[i].force){
-                    temp =list[i];
-                    temp.parentx = list[i].x;
-                    temp.parenty = list[i].y;
-                    temp.closedSet = true;
-                }
-                if ( list[i].force > list[i+1].force ){
-                    temp  = list[i+1];
-                    temp.parentx = list[i+1].x;
-                    temp.parenty = list[i+1].y;
-                    temp.closedSet = true;
-                }
-            }
-            closedSet[cc].x=temp.x;
-            closedSet[cc].y=temp.y;
-            X=temp.x;
-            Y=temp.y;
-            cc++;
-            //we check everything from current
-            goto AGAIN;
+    initit(nodes, end, &current[0]);
+    /* takes an end point on the map (a pointer to a 2D array) and a current location
+     finds the best route, then returns a pointer to the struct of best route */
+    struct node *best = findf(end.x,end.y,&current[0]);
+
+    while ( (co >= 0) & (co<100) ){
+            if ((best->x != start.x) & (best->y != start.y)){
+            best = findf(best->x,best->y,&current[0]);
+        }else if((best->x = start.x) & (best->y = start.y)){
+            break;
         }
-        
+        co++;
+        closedSet[co].x = best->x;
+        closedSet[co].y = best->y;
     }
+    
+    
+    
+    //if we find the best F we still need to check that the last path is better then other availbe paths before it... maybe later
     return closedSet;
 }
 
@@ -204,7 +214,6 @@ int main()
     map = (struct cord *)malloc(sizeof(struct cord) * 100);
     input(map,"input.txt");
     struct cord *ret = aStar(start,end,map);//,nodes);
-    printf("%d\n", ret[0].x);
-    printf("%d\n", ret[0].y);
+    printf("%d\n", ret[3].x);
+    printf("%d\n", ret[3].y);
 }
-
