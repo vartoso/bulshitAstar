@@ -9,9 +9,14 @@
 #ifndef preset_h
 #define preset_h
 
-#ifndef MAPSIZE
-#define MAPSIZE 100
+#ifndef MAPX
+#define MAPX 10
 #endif
+
+#ifndef MAPY
+#define MAPY 10
+#endif
+
 
 #ifdef DEBUG
 #define testPrint(x,...) printf(x,__VA_ARGS__)
@@ -21,4 +26,3 @@
 
 
 #endif /* preset_h */
-

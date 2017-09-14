@@ -71,11 +71,11 @@ void input( cord * map,char *inputFile){
 
 
 //threw the init to another function just for the order of things
-void initit( cord * nodes,  cord end,  cord (* current)[10])
+void initit( cord * nodes,  cord end, cord ** current )
 {
     int minForce = 1000; //start with the lowest being the highest value
     // cord current[10][10];
-    for(int x=0; x<100; x++){
+    for(int x=0; x < (MAPX*MAPY) ; x++){
         if (nodes[x].x < end.x){
             //swap X if negative
             nodes[x].force = nodes[x].force + ((( nodes[x].x - end.x ) + ( end.y - nodes[x].y ))*10);
@@ -87,7 +87,7 @@ void initit( cord * nodes,  cord end,  cord (* current)[10])
         nodes[x].force = nodes[x].force + (((end.x - nodes[x].x) + (end.y - nodes[x].y))*10);
         
         //map the xy
-        if (!((nodes[x].x > 10) | (nodes[x].y>10))){
+        if (!((nodes[x].x > MAPX) | (nodes[x].y > MAPY))){
             current[nodes[x].x][nodes[x].y] = nodes[x];
         }
         //fix not given force
@@ -99,12 +99,12 @@ void initit( cord * nodes,  cord end,  cord (* current)[10])
     
 }
 
- node *findf(int X,int  Y, cord (*current)[10]){
+ node *findf(int X,int  Y, cord* current[MAPY]){
     
-     node list[100];
+     node list[MAPX*MAPY];
     int co=0;
-     node *temp;
-    temp = malloc(sizeof(  node));
+    node *temp;
+    temp = malloc(sizeof(node));
     
     if (X<9){
         co++;
@@ -186,25 +186,29 @@ void initit( cord * nodes,  cord end,  cord (* current)[10])
 
 
 
- cord *aStar( cord start, cord end,  cord nodes[MAPSIZE]){
-    cord * closedSet = malloc(sizeof( cord)*100);
+cord *aStar( cord start, cord end,  cord nodes[MAPX*MAPY]){
+    cord * closedSet = malloc(sizeof( cord)*(MAPX*MAPY));
     if (closedSet == NULL) error(0);
     int co;
     co = 0;
     closedSet[0].x = end.x;
     closedSet[0].y = end.y;
-    cord current[10][10];
+    //cord current[10][10];
+    cord **current = (cord **)malloc(MAPX * (sizeof (cord *)));
+    for (int i = 0; i < MAPX; i++){
+        current[i] = (cord *)malloc(MAPY * (sizeof (cord)));
+    }
     //initialize values
-    initit(nodes, start, &current[0]);
+    initit(nodes, start, current);
     /* takes an end point on the map (a pointer to a 2D array) and a current location
      finds the best route, then returns a pointer to the  of best route */
     co++;
-    node *best = findf(end.x,end.y,&current[0]);
+    node *best = findf(end.x,end.y,current);
     closedSet[co].x = best->x;
     closedSet[co].y = best->y;
-    while ( (co >= 0) & (co<100) ){
+    while ( (co >= 0) & (co<(MAPX*MAPY)) ){
         if ((best->x != start.x) & (best->y != start.y)){
-            best = findf(best->x,best->y,&current[0]);
+            best = findf(best->x,best->y, current);
         }else if((best->x = start.x) & (best->y = start.y)){
             break;
         }
@@ -212,9 +216,9 @@ void initit( cord * nodes,  cord end,  cord (* current)[10])
         closedSet[co].x = best->x;
         closedSet[co].y = best->y;
     }
-    
-    
-    
+
+
+
     //if we find the best F we still need to check that the last path is better then other availbe paths before it... maybe later
     return closedSet;
 }
