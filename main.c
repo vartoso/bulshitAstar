@@ -19,6 +19,7 @@
 
 int main()
 {
+    int globalError = noError;
     int matrix[2]; //0 is X and 1 is Y
     cord *map;
     cord start;
@@ -33,14 +34,25 @@ int main()
     map = malloc( sizeof(cord) * 1000000);
     if ( ((void * )map == NULL) || (sizeof map == 0) )
     {
-        error(0);
+        error(nullPointer);
     }
-    *matrix = *input( map, "input.txt", matrix);
-    cord *ret = aStar( start, end, map, matrix); //map is map that consists from nodes);
+    input( map, "input.txt", matrix);
+    cord *ret = aStar( start, end, map, matrix, &globalError); //map is map that consists from nodes);
+    if ( globalError != noError )
+    {
+        printf("This program had a memmory management problem and did not run the way it should have ran, please run it again to get the correct results.");
+        return globalError;
+    }
     for ( int i = sizeof(ret); i > 0; i-- )
     {
         printf("%d\tx : %d \ty : %d\n", i, ret[i].x , ret[i].y);
     }
-    return 0;
+    if ( globalError == noError )
+    {
+        return 0;
+    }else
+    {
+        return 1;
+    }
 }
 
