@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include "preset.h"
 #include "structures.h"
 #include "functions.c"
@@ -29,13 +30,13 @@ int main()
     end.y   = 0;
     
     //I'm limiting the input matrix to a 1000 on 1000
-    map = (cord * ) malloc( sizeof(cord) * 1000000);
+    map = malloc( sizeof(cord) * 1000000);
     if ( ((void * )map == NULL) || (sizeof map == 0) )
     {
         error(0);
     }
-    *matrix = *input( map,"input.txt", matrix);
-    cord *ret = aStar( start, end, map, matrix);//map is map that consists from nodes);
+    *matrix = *input( map, "input.txt", matrix);
+    cord *ret = aStar( start, end, map, matrix); //map is map that consists from nodes);
     for ( int i = sizeof(ret); i > 0; i-- )
     {
         printf("%d\tx : %d \ty : %d\n", i, ret[i].x , ret[i].y);
