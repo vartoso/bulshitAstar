@@ -10,45 +10,41 @@
 #ifndef functions_h
 #define functions_h
 
-//printing errors
 
-
-
-void error(int err) __attribute__ ((noreturn));
-int * input( cord * map, char *inputFile, int *  xy);
+void error(int err);
+void input( cord * map, char *inputFile, int *  xy);
 void initIt( cord * nodes, cord start, cord ** current , int * xy);
-node * findf( int X, int  Y, cord ** current, int * xy);
-cord * aStar( cord start, cord end, cord * nodes, int * xy);
+node * findf( int X, int  Y, cord ** current, int * xy , int * globalError);
+cord * aStar( cord start, cord end, cord * nodes, int * xy, int * globalError);
 
 void error(int err){
     switch (err)
     {
-        case 0:
+        case nullPointer:
             printf("I got %s from allocation: ", errordesc[err].message);
             break;
             
-        case 1:
+        case noInput:
             printf("I got %s from fgets: ", errordesc[err].message);
             break;
             
-        case 2:
+        case noLineScan:
             printf("I got %s from Sscanf: ", errordesc[err].message);
         
-        case 3:
+        case closeFail:
             printf("I got %s from fclose: ", errordesc[err].message);
         
-        case 4:
+        case badInput:
             printf("I got %s from fclose: ", errordesc[err].message);
     
         default:
             break;
     }
     perror("Failed because: ");
-    exit(1);
 }
 
 
-int * input( cord * map, char * inputFile, int * xy){
+void input( cord * map, char * inputFile, int * xy){
     char * err;
     char line[20];
     int inc=0;
@@ -66,7 +62,7 @@ int * input( cord * map, char * inputFile, int * xy){
     {
         if ( err == NULL )
         {
-            error(1);
+            error(noInput);
         }
         else if ((sscanf( line, "%d %d %d", &map[inc].x, &map[inc].y, &map[inc].force)) != EOF)
         {
@@ -77,7 +73,7 @@ int * input( cord * map, char * inputFile, int * xy){
                 {
                     y++;
                 }else{
-                    error(4);
+                    error(badInput);
                 }
             }else if( map[inc].x == inc/y )
             {
@@ -86,16 +82,16 @@ int * input( cord * map, char * inputFile, int * xy){
             inc++;
         }
         else {
-            error(2);
+            error(noLineScan);
         }
     }
     if ( fclose (pf) == EOF )
     {
-        error(3);
+        error(closeFail);
     }
+    
     xy[0] = x;
     xy[1] = y;
-    return  xy;
 }
 
 
@@ -132,13 +128,18 @@ void initIt( cord * nodes, cord start, cord ** current , int * xy)
 }
 
 
-node *findf(int X, int  Y, cord ** current, int * xy){
+node *findf(int X, int  Y, cord ** current, int * xy, int * globalError){
     
     node list[xy[0] * xy[1]];
     int co = 0;
     node * temp;
     temp = malloc( sizeof(node));
-    
+    if ( temp == NULL | temp == nullPointer)
+    {
+        error(nullPointer);
+        *globalError = 0;
+        return NULL;
+    }
     if ( X < 9 )
     {
         co++;
@@ -232,33 +233,46 @@ node *findf(int X, int  Y, cord ** current, int * xy){
 
 
 
-cord *aStar( cord start, cord end,  cord * nodes , int * xy){
+cord *aStar( cord start, cord end,  cord * nodes , int * xy, int * globalError){
     cord * closedSet = malloc( sizeof( cord)*(xy[0]*xy[1]));
-    if (closedSet == NULL) error(0);
+    if (closedSet == NULL) error(nullPointer);
     int co;
     co = 0;
     closedSet[0].x = start.x;
     closedSet[0].y = start.y;
     cord  ** current = malloc( xy[0] * (sizeof (cord * )) );
+    if( current == NULL)
+    {
+        error(nullPointer);
+        *globalError = nullPointer;
+    }
     for ( int i = 0; i < xy[0]; i++)
     {
         current[i] = malloc( xy[1] * (sizeof(cord)) );
+        if( current[i] == NULL )
+        {
+            error(nullPointer);
+            *globalError = nullPointer;
+        }
     }
-    //  initialize values
     initIt( nodes, start, current, xy);
-    /*  
-        takes an end point on the map (a pointer to a 2D array) and a current location
-        finds the best route, then returns a pointer to the  of best    
-    */
-    co++;
-    node *best      = findf( start.x, start.y, current, xy);
-    closedSet[co].x = best->x;
-    closedSet[co].y = best->y;
+    node *best      = findf( start.x, start.y, current, xy, globalError);
+    if ( best != NULL )
+    {
+        co++;
+        closedSet[co].x = best->x;
+        closedSet[co].y = best->y;
+    }
+    
     while ( ( co >= 0 ) & ( co < (xy[0] * xy[1]) ) )
     {
         if ( (best->x != end.x) & (best->y != end.y) )
         {
-            best = findf( best->x, best->y, current,xy);
+            best = findf( best->x, best->y, current,xy, globalError);
+            if (best == NULL)
+            {
+                *globalError = nullPointer;
+            }
         }else if( (best->x = end.x) & (best->y = end.y) )
         {
             break;
@@ -267,10 +281,8 @@ cord *aStar( cord start, cord end,  cord * nodes , int * xy){
         closedSet[co].x = best->x;
         closedSet[co].y = best->y;
     }
-
-
-
-    //if we find the best F we still need to check that the last path is better then other availbe paths before it... maybe later
     return closedSet;
 }
+
+
 #endif /* functions_h */
