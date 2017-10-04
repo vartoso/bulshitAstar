@@ -9,13 +9,7 @@
 #ifndef preset_h
 #define preset_h
 
-#ifndef MAPX
-#define MAPX 10
-#endif
 
-#ifndef MAPY
-#define MAPY 10
-#endif
 
 
 #ifdef DEBUG
@@ -23,6 +17,6 @@
 #else
 #define testPrint(x,...) ;
 #endif
-
+#define noError 10
 
 #endif /* preset_h */
